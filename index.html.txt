@@ -1,0 +1,429 @@
+﻿<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Premium Sandbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Lobster&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #000000; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        
+        /* Premium Login */
+        #login-screen { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 5000; }
+        .login-box { background: #121212; border: 1px solid #262626; padding: 40px 30px; width: 90%; max-width: 360px; display: flex; flex-direction: column; text-align: center; border-radius: 12px; }
+        .login-box h1 { font-family: 'Lobster', cursive; font-size: 42px; margin-bottom: 30px; }
+        .login-box input { margin-bottom: 15px; padding: 14px; border: 1px solid #262626; background: #1e1e1e; border-radius: 8px; color: white; font-size: 14px; outline: none; }
+        .login-box input:focus { border-color: #555; }
+        .login-box button { background: #0095f6; color: white; border: none; padding: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; font-size: 15px; margin-top: 10px; }
+
+        /* App Wrapper */
+        .app-shell { width: 100%; max-width: 450px; display: flex; flex-direction: column; min-height: 100vh; background: #000; position: relative; padding-bottom: 60px; }
+
+        /* Premium Header */
+        header { position: sticky; top: 0; background: #000; border-bottom: 1px solid #1c1c1e; display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; z-index: 1000; }
+        header h1 { font-family: 'Lobster', cursive; font-size: 26px; }
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        
+        /* Sleek Search Bar */
+        .search-container { position: relative; width: 160px; }
+        .search-container input { width: 100%; padding: 8px 12px 8px 30px; border: none; border-radius: 8px; background: #1c1c1e; color: white; font-size: 13px; outline: none; transition: width 0.3s; }
+        .search-container::before { content: '🔍'; position: absolute; left: 10px; top: 7px; font-size: 12px; opacity: 0.5; }
+
+        /* Full-Page Screens Layout */
+        .view-page { display: none; width: 100%; padding: 10px; animation: fadeIn 0.2s ease-in-out; }
+        .view-page.active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Instagram Post Card */
+        .card { background: #000; margin-bottom: 20px; width: 100%; border-bottom: 1px solid #121212; }
+        .card-header { padding: 10px 5px; display: flex; align-items: center; justify-content: space-between; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid #262626; }
+        .username { font-weight: 600; font-size: 13px; }
+        
+        .media-holder { width: 100%; background: #050505; border-radius: 4px; overflow: hidden; position: relative; }
+        .card-media { width: 100%; display: block; object-fit: cover; }
+        .reel-size { height: 550px; }
+        .post-size { max-height: 450px; }
+
+        .card-actions { padding: 12px 5px; display: flex; gap: 18px; }
+        .like-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+        .liked { color: #ff3040; }
+        .details-area { padding: 0 5px; font-size: 14px; }
+        .details-area p { margin-bottom: 4px; }
+        
+        /* Comments System */
+        .comment-list { margin-top: 5px; font-size: 13px; color: #a8a8a8; max-height: 75px; overflow-y: auto; }
+        .comment-box { display: flex; border-bottom: 1px solid #121212; margin-top: 8px; }
+        .comment-box input { flex: 1; border: none; background: transparent; color: white; font-size: 13px; padding: 8px 5px; outline: none; }
+        .comment-box button { border: none; background: none; color: #0095f6; font-weight: 600; font-size: 13px; cursor: pointer; }
+
+        /* Profile Page Styles */
+        .profile-container { padding: 20px 10px; }
+        .profile-header { display: flex; align-items: center; gap: 30px; margin-bottom: 25px; }
+        .p-avatar-box { position: relative; width: 86px; height: 86px; }
+        .p-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .change-dp-lbl { position: absolute; bottom: 0; right: 0; background: #0095f6; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; font-weight: bold; }
+        
+        .profile-meta h2 { font-size: 22px; font-weight: 400; margin-bottom: 10px; }
+        .edit-profile-btn { background: #1c1c1e; color: white; border: none; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .bio-section { font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+        
+        /* Edit Profile Modal Inside Page */
+        #edit-fields-box { display: none; background: #1c1c1e; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        #edit-fields-box input { width: 100%; padding: 10px; background: #000; border: 1px solid #262626; color: white; border-radius: 6px; margin-bottom: 10px; outline: none; }
+        #edit-fields-box button { background: #0095f6; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+        /* Sandbox Admin Control Studio */
+        .admin-badge { background: #ff3040; color: white; padding: 12px; border-radius: 10px; margin-bottom: 15px; font-size: 13px; font-weight: 600; }
+        .creator-studio { background: #1c1c1e; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .creator-studio h3 { font-size: 15px; margin-bottom: 10px; color: #a8a8a8; }
+        .creator-studio select, .creator-studio input, .creator-studio button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 6px; border: none; font-size: 13px; }
+        .creator-studio select, .creator-studio input { background: #000; color: white; border: 1px solid #262626; outline: none; }
+        .creator-studio button { background: #ff3040; color: white; font-weight: 600; cursor: pointer; }
+        
+        /* Content Approval Queue */
+        .approval-queue { background: #121212; padding: 12px; border-radius: 8px; border: 1px dashed #ff3040; margin-top: 15px; }
+        .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1c1c1e; font-size: 12px; }
+        .queue-btn { background: #262626; color: #2fb171; border: none; padding: 4px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+        /* Pure Instagram Bottom Nav System */
+        nav { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #000; border-top: 1px solid #1c1c1e; display: flex; justify-content: space-around; padding: 12px 0; z-index: 2000; }
+        .nav-tab { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; height: 40px; }
+        .nav-tab svg { width: 24px; height: 24px; fill: #8e8e8e; transition: transform 0.1s; }
+        .nav-tab.active-tab svg { fill: #ffffff; }
+        .nav-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid #8e8e8e; }
+        .nav-tab.active-tab .nav-avatar { border-color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>Instagram</h1>
+            <input type="text" id="login-name" placeholder="Username / Name">
+            <input type="text" id="login-phone" placeholder="Phone Number">
+            <button onclick="authApp()">Log In</button>
+        </div>
+    </div>
+
+    <div class="app-shell">
+        
+        <header>
+            <h1 onclick="navigateTo('home')" style="cursor:pointer;">Instagram</h1>
+            <div class="header-actions">
+                <div class="search-container">
+                    <input type="text" id="app-search" placeholder="Search captions..." oninput="triggerSearch()">
+                </div>
+            </div>
+        </header>
+
+        <div id="page-home" class="view-page active-page">
+            <div id="posts-stream"></div>
+        </div>
+
+        <div id="page-reels" class="view-page">
+            <div id="reels-stream"></div>
+        </div>
+
+        <div id="page-profile" class="view-page">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="p-avatar-box">
+                        <img id="my-profile-pic" class="p-avatar" src="https://picsum.photos/id/1062/150/150">
+                        <label class="change-dp-lbl" for="dp-file-input">＋</label>
+                        <input type="file" id="dp-file-input" accept="image/*" style="display:none;" onchange="updateProfilePicture(this)">
+                    </div>
+                    <div class="profile-meta">
+                        <h2 id="my-profile-name">User Account</h2>
+                        <button class="edit-profile-btn" onclick="toggleEditBox()">Edit Profile</button>
+                    </div>
+                </div>
+                
+                <div id="edit-fields-box">
+                    <input type="text" id="edit-name-input" placeholder="Change Name...">
+                    <button onclick="saveProfileChanges()">Save Profile</button>
+                </div>
+
+                <div class="bio-section">
+                    <p style="font-weight: 600;">Status Dashboard</p>
+                    <p id="my-profile-status" style="color: #a8a8a8;"></p>
+                </div>
+
+                <div id="admin-sandbox-desk" style="display:none;">
+                    <div class="admin-badge">⚡ Welcome Thivash (Root Controller Control Unlocked)</div>
+                    
+                    <div class="creator-studio">
+                        <h3>Simulate Content Creator Post</h3>
+                        <input type="text" id="sim-author" placeholder="Creator Name (eg: ronaldo, vijay)">
+                        <input type="text" id="sim-avatar" placeholder="Avatar Image Link (Optional)">
+                        <select id="sim-type">
+                            <option value="post">Instagram Feed Post 📸</option>
+                            <option value="reels">Instagram Video Reel 🎬</option>
+                        </select>
+                        <input type="text" id="sim-media" placeholder="Paste Direct Media URL (.mp4 or Image)">
+                        <input type="text" id="sim-caption" placeholder="Write caption details...">
+                        <button onclick="submitToSandbox()">Send to Approval Sandbox</button>
+                    </div>
+
+                    <div class="approval-queue">
+                        <h4 style="font-size:13px; margin-bottom:8px; color:#ff3040;">📥 Sandbox Verification Desk</h4>
+                        <div id="queue-list">
+                            <p style="color:#555; font-size:12px;">No pending items to review.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <nav>
+            <button id="tab-home" class="nav-tab active-tab" onclick="navigateTo('home')">
+                <svg viewBox="0 0 24 24"><path d="M22 23h-6.001a1 1 0 0 1-1-1v-5.667a1 1 0 0 0-1-1H9.999a1 1 0 0 0-1 1V22a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V9.004a1 1 0 0 1 .381-.785l9.504-7.46a1 1 0 0 1 1.236 0l9.504 7.46A1 1 0 0 1 23 9.004V22a1 1 0 0 1-1 1zM3 10.158V21h3v-5.667a3 3 0 0 1 3-3h4.001a3 3 0 0 1 3 3V21h3V10.158l-7-5.498z"/></svg>
+            </button>
+            <button id="tab-reels" class="nav-tab" onclick="navigateTo('reels')">
+                <svg viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10S2 17.514 2 12 6.486 2 12 2zm0-2C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm-2 15.5v-7l6 3.5-6 3.5z"/></svg>
+            </button>
+            <button id="tab-profile" class="nav-tab" onclick="navigateTo('profile')">
+                <img id="nav-avatar-img" class="nav-avatar" src="https://picsum.photos/id/1062/50/50">
+            </button>
+        </nav>
+
+    </div>
+
+    <script>
+        const AUTH_NAME = "thivash";
+        const AUTH_PHONE = "6379677248";
+
+        let sessionUser = "";
+        let isRootAdmin = false;
+        let activePage = "home";
+        let searchString = "";
+
+        // Core Data Matrix
+        let globalDatabase = [
+            { id: 1, author: "virat.kohli", avatar: "https://picsum.photos/id/338/100/100", type: "post", media: "https://picsum.photos/600/500", caption: "Match day vibes! Focus on goals 🎯", likes: 2540, liked: false, comments: ["King Kohli!", "Mass bro"] },
+            { id: 2, author: "anirudh_official", avatar: "https://picsum.photos/id/445/100/100", type: "reels", media: "https://www.w3schools.com/html/mov_bbb.mp4", caption: "New track sync loop! Full sound up 🎧🔥", likes: 9810, liked: false, comments: ["Rockstar background work!!", "Loop mode enabled"] }
+        ];
+
+        let pendingSandbox = [];
+
+        // Init Engine
+        if (!localStorage.getItem("insta_db")) localStorage.setItem("insta_db", JSON.stringify(globalDatabase));
+        globalDatabase = JSON.parse(localStorage.getItem("insta_db"));
+
+        function authApp() {
+            const name = document.getElementById("login-name").value.trim();
+            const phone = document.getElementById("login-phone").value.trim();
+
+            if(!name) { alert("Please provide access user string"); return; }
+            sessionUser = name;
+
+            if(name.toLowerCase() === AUTH_NAME && phone === AUTH_PHONE) {
+                isRootAdmin = true;
+                document.getElementById("admin-sandbox-desk").style.display = "block";
+            }
+
+            // Sync Profile Elements
+            document.getElementById("my-profile-name").innerText = sessionUser;
+            document.getElementById("my-profile-status").innerText = isRootAdmin ? "👑 Main Admin Account (Verification Rights Active)" : "Verified Public Account Access";
+            
+            document.getElementById("login-screen").style.display = "none";
+            renderEngine();
+        }
+
+        function navigateTo(targetPage) {
+            activePage = targetPage;
+            
+            document.getElementById("page-home").classList.toggle("active-page", targetPage === 'home');
+            document.getElementById("page-reels").classList.toggle("active-page", targetPage === 'reels');
+            document.getElementById("page-profile").classList.toggle("active-page", targetPage === 'profile');
+
+            document.getElementById("tab-home").classList.toggle("active-tab", targetPage === 'home');
+            document.getElementById("tab-reels").classList.toggle("active-tab", targetPage === 'reels');
+            document.getElementById("tab-profile").classList.toggle("active-tab", targetPage === 'profile');
+
+            renderEngine();
+        }
+
+        function triggerSearch() {
+            searchString = document.getElementById("app-search").value.toLowerCase();
+            renderEngine();
+        }
+
+        function renderEngine() {
+            const homeStream = document.getElementById("posts-stream");
+            const reelsStream = document.getElementById("reels-stream");
+            
+            if(activePage === 'home') {
+                homeStream.innerHTML = "";
+                const data = globalDatabase.filter(p => p.type === 'post' && p.caption.toLowerCase().includes(searchString));
+                if(data.length === 0) homeStream.innerHTML = "<p style='text-align:center; padding:40px; color:#555;'>No posts match filter</p>";
+                data.forEach(item => homeStream.appendChild(createCardItem(item)));
+            }
+            
+            if(activePage === 'reels') {
+                reelsStream.innerHTML = "";
+                const data = globalDatabase.filter(p => p.type === 'reels' && p.caption.toLowerCase().includes(searchString));
+                if(data.length === 0) reelsStream.innerHTML = "<p style='text-align:center; padding:40px; color:#555;'>No reels match filter</p>";
+                data.forEach(item => reelsStream.appendChild(createCardItem(item)));
+            }
+
+            if(isRootAdmin) renderSandboxQueue();
+        }
+
+        function createCardItem(item) {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            let mediaTag = "";
+            if (item.media.endsWith(".mp4") || item.type === "reels" || item.media.includes("video")) {
+                mediaTag = `<video class="card-media reel-size" src="${item.media}" controls autoplay loop muted></video>`;
+            } else {
+                mediaTag = `<img class="card-media post-size" src="${item.media}">`;
+            }
+
+            let commentsHtml = item.comments.map(c => `<p style="margin-top:2px;"><span style="color:#fff; font-weight:600;">Viewer:</span> ${c}</p>`).join("");
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="user-info">
+                        <img class="avatar" src="${item.avatar || 'https://picsum.photos/100/100'}">
+                        <span class="username">${item.author}</span>
+                    </div>
+                    <span style="font-size:12px; opacity:0.4;">⋮</span>
+                </div>
+                <div class="media-holder">${mediaTag}</div>
+                <div class="card-actions">
+                    <button class="like-btn ${item.liked ? 'liked' : ''}" onclick="toggleLikeLink(${item.id})">${item.liked ? '❤️' : '🤍'}</button>
+                </div>
+                <div class="details-area">
+                    <p style="font-weight:700;">${item.likes} likes</p>
+                    <p><span class="username" style="margin-right:6px;">${item.author}</span>${item.caption}</p>
+                    <div class="comment-list">${commentsHtml}</div>
+                </div>
+                <div class="comment-box">
+                    <input type="text" id="comm-in-${item.id}" placeholder="Add a comment for ${item.author}...">
+                    <button onclick="commitComment(${item.id})">Post</button>
+                </div>
+            `;
+            return card;
+        }
+
+        function toggleLikeLink(id) {
+            globalDatabase = globalDatabase.map(p => {
+                if(p.id === id) { p.liked = !p.liked; p.likes = p.liked ? p.likes + 1 : p.likes - 1; }
+                return p;
+            });
+            syncState();
+        }
+
+        function commitComment(id) {
+            const input = document.getElementById(`comm-in-${id}`);
+            if(!input.value.trim()) return;
+            globalDatabase = globalDatabase.map(p => {
+                if(p.id === id) p.comments.push(`${sessionUser}: ${input.value.trim()}`);
+                return p;
+            });
+            syncState();
+            input.value = "";
+        }
+
+        // Profile Updation Methods
+        function toggleEditBox() {
+            const box = document.getElementById("edit-fields-box");
+            box.style.display = (box.style.display === "block") ? "none" : "block";
+        }
+
+        function saveProfileChanges() {
+            const newName = document.getElementById("edit-name-input").value.trim();
+            if(newName) {
+                sessionUser = newName;
+                document.getElementById("my-profile-name").innerText = sessionUser;
+                alert("Profile credentials updated offline!");
+            }
+            toggleEditBox();
+        }
+
+        function updateProfilePicture(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById("my-profile-pic").src = e.target.result;
+                    document.getElementById("nav-avatar-img").src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Content Sandbox Pipeline Setup (Approval Desk)
+        function submitToSandbox() {
+            const author = document.getElementById("sim-author").value.trim() || "anonymous_creator";
+            const avImg = document.getElementById("sim-avatar").value.trim() || "https://picsum.photos/100/100";
+            const type = document.getElementById("sim-type").value;
+            const media = document.getElementById("sim-media").value.trim();
+            const caption = document.getElementById("sim-caption").value.trim();
+
+            if(!media || !caption) { alert("Media path link and caption parameters required!"); return; }
+
+            const pendingContent = {
+                id: Date.now(),
+                author: author,
+                avatar: avImg,
+                type: type,
+                media: media,
+                caption: caption,
+                likes: 0,
+                liked: false,
+                comments: []
+            };
+
+            pendingSandbox.push(pendingContent);
+            alert("Sent to Admin Desk Review for verification!");
+            
+            // Clear Sandbox Form Elements
+            document.getElementById("sim-author").value = "";
+            document.getElementById("sim-media").value = "";
+            document.getElementById("sim-caption").value = "";
+
+            renderSandboxQueue();
+        }
+
+        function renderSandboxQueue() {
+            const qList = document.getElementById("queue-list");
+            qList.innerHTML = "";
+
+            if(pendingSandbox.length === 0) {
+                qList.innerHTML = "<p style='color:#555; font-size:12px;'>No pending items in sandbox pool.</p>";
+                return;
+            }
+
+            pendingSandbox.forEach((item, index) => {
+                const row = document.createElement("div");
+                row.className = "queue-item";
+                row.innerHTML = `
+                    <span>[${item.type.toUpperCase()}] By @${item.author}: "${item.caption.substring(0,15)}..."</span>
+                    <button class="queue-btn" onclick="approveSandboxItem(${index})">Accept ✔</button>
+                `;
+                qList.appendChild(row);
+            });
+        }
+
+        function approveSandboxItem(index) {
+            const item = pendingSandbox[index];
+            globalDatabase.unshift(item); // Push directly into rendering database matrix
+            pendingSandbox.splice(index, 1);
+            
+            syncState();
+            alert(`Content authorized successfully! Check the ${item.type} segment display tab.`);
+        }
+
+        function syncState() {
+            localStorage.setItem("insta_db", JSON.stringify(globalDatabase));
+            renderEngine();
+        }
+    </script>
+</body>
+</html>
+
