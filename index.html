@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instagram Premium Sandbox Pro</title>
+    <title>Instagram Premium Sandbox Ultra</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Lobster&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -43,14 +43,17 @@
         .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #cc2366; padding: 1px; }
         .username { font-weight: 600; font-size: 14px; }
         
+        /* Action Follow Buttons on Header or ID info */
+        .follow-toggle-btn { background: #0095f6; color: white; border: none; padding: 5px 12px; font-size: 12px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+        .follow-toggle-btn.following { background: #262626; color: white; }
+
         .media-holder { width: 100%; background: #050505; overflow: hidden; position: relative; }
         .card-media { width: 100%; display: block; object-fit: cover; }
         .reel-size { height: 500px; width: 100%; background: #000; }
         .post-size { max-height: 450px; }
 
         .card-actions { padding: 12px 15px 5px 15px; display: flex; gap: 18px; }
-        .like-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; transition: transform 0.1s; }
-        .like-btn:active { transform: scale(1.2); }
+        .like-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
         .liked { color: #ff3040; }
         .details-area { padding: 0 15px; font-size: 14px; }
         .details-area p { margin-bottom: 4px; }
@@ -81,7 +84,7 @@
         .clickable-stat:hover { background: #121212; }
 
         .profile-meta { margin-bottom: 15px; }
-        .profile-meta h2 { font-size: 18px; font-weight: 600; margin-bottom: 5px; }
+        .profile-meta h2 { font-size: 18px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
         .edit-profile-btn { background: #1c1c1e; color: white; border: none; padding: 8px 0; width: 100%; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 15px; }
         .bio-section { font-size: 13.5px; line-height: 1.4; color: #efefef; }
         
@@ -95,6 +98,7 @@
         .upload-panel h3 { font-size: 18px; margin-bottom: 15px; font-weight: 600; text-align: center; }
         .upload-panel select, .upload-panel input, .upload-panel button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 14px; }
         .upload-panel select, .upload-panel input { background: #000; color: white; border: 1px solid #262626; outline: none; }
+        .upload-panel input[type="file"] { background: #121212; color: #a8a8a8; cursor: pointer; }
         .upload-panel button { background: #0095f6; color: white; font-weight: 600; cursor: pointer; margin-top: 10px; }
         
         /* Admin Sandbox Desk */
@@ -108,7 +112,8 @@
         .modal-content { background: #262626; width: 100%; max-width: 360px; border-radius: 12px; overflow: hidden; animation: zoomIn 0.2s ease; }
         .modal-header { padding: 15px; border-bottom: 1px solid #363636; display: flex; justify-content: space-between; font-weight: 600; }
         .modal-body { max-height: 300px; overflow-y: auto; padding: 10px; }
-        .follow-user-row { display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid #323232; }
+        .follow-user-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px; border-bottom: 1px solid #323232; }
+        .follow-user-row .u-details { display: flex; align-items: center; gap: 10px; }
         .follow-user-row img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
         @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -129,8 +134,8 @@
     <div id="login-screen">
         <div class="login-box">
             <h1>Instagram</h1>
-            <input type="text" id="login-name" placeholder="Username (Thivash to Unlock Admin)">
-            <input type="text" id="login-phone" placeholder="Phone / Password">
+            <input type="text" id="login-name" placeholder="Username">
+            <input type="password" id="login-pass" placeholder="Password / Phone Key">
             <button onclick="authApp()">Log In</button>
         </div>
     </div>
@@ -142,10 +147,10 @@
             <h1 onclick="navigateTo('home')">Instagram</h1>
         </header>
 
-        <!-- Search Bar Section (Only visible inside Search Tab) -->
+        <!-- Search Bar Section (Comprehensive ID Finder) -->
         <div id="search-bar-block" class="search-container">
             <div class="search-inner">
-                <input type="text" id="app-search" placeholder="Search creators, captions, posts..." oninput="triggerSearch()">
+                <input type="text" id="app-search" placeholder="Search exact ID (eg: virat.kohli)..." oninput="triggerSearch()">
             </div>
         </div>
 
@@ -163,12 +168,15 @@
         <div id="page-create" class="view-page">
             <div class="upload-panel">
                 <h3>Create New Post / Reel</h3>
-                <input type="text" id="sim-author" placeholder="Your Creator Handle (eg: ronaldo)">
+                <input type="text" id="sim-author" placeholder="Your Handle ID (eg: poorna_style)">
                 <select id="sim-type">
                     <option value="post">Instagram Feed Post 📸</option>
                     <option value="reels">Instagram Video Reel 🎬</option>
                 </select>
-                <input type="text" id="sim-media" placeholder="Paste Media URL (.mp4 video or Image link)">
+                <!-- File Upload Replace URL path -->
+                <p style="font-size:12px; color:#a8a8a8; margin-top:5px;">Select Media File from Gallery:</p>
+                <input type="file" id="sim-file" accept="image/*,video/*">
+                
                 <input type="text" id="sim-caption" placeholder="Write an engaging caption...">
                 <button onclick="submitToSandbox()">Submit for Thivash Approval</button>
             </div>
@@ -189,7 +197,7 @@
                             <div class="stat-label">posts</div>
                         </div>
                         <div class="clickable-stat" onclick="openFollowersModal()">
-                            <div class="stat-count" id="followers-count-lbl">4M</div>
+                            <div class="stat-count" id="followers-count-lbl">5</div>
                             <div class="stat-label">followers</div>
                         </div>
                         <div>
@@ -240,7 +248,7 @@
 
     </div>
 
-    <!-- Followers Modal Element Overlay -->
+    <!-- Followers Modal System Overlay -->
     <div id="followers-modal" class="modal-overlay" onclick="closeFollowersModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -248,29 +256,30 @@
                 <span style="cursor:pointer; color:#ff3040;" onclick="closeFollowersModal()">✕</span>
             </div>
             <div class="modal-body" id="followers-list-container">
-                <!-- Javascript fills this -->
+                <!-- Filled via JS loop -->
             </div>
         </div>
     </div>
 
     <script>
         const AUTH_NAME = "thivash";
+        const AUTH_PASS = "Thivash@Root#2026"; // Strong Secure Root Password Setup
 
         let sessionUser = "";
         let isRootAdmin = false;
         let activePage = "home";
         let searchString = "";
 
-        // Simulated Followers Data Network matrix
-        const mockFollowers = [
-            { name: "virat.kohli", img: "https://picsum.photos/id/338/100/100" },
-            { name: "anirudh_official", img: "https://picsum.photos/id/445/100/100" },
-            { name: "cristiano", img: "https://picsum.photos/id/237/100/100" },
-            { name: "leomessi", img: "https://picsum.photos/id/1025/100/100" },
-            { name: "kollywood_trends", img: "https://picsum.photos/id/122/100/100" }
+        // Core Followers Matrix Engine
+        let mockFollowers = [
+            { id: "f1", name: "virat.kohli", img: "https://picsum.photos/id/338/100/100", followed: true },
+            { id: "f2", name: "anirudh_official", img: "https://picsum.photos/id/445/100/100", followed: true },
+            { id: "f3", name: "cristiano", img: "https://picsum.photos/id/237/100/100", followed: true },
+            { id: "f4", name: "leomessi", img: "https://picsum.photos/id/1025/100/100", followed: true },
+            { id: "f5", name: "kollywood_trends", img: "https://picsum.photos/id/122/100/100", followed: true }
         ];
 
-        // Database Engine Layout Array
+        // Database Engine Base Array
         let globalDatabase = [
             { id: 1, author: "virat.kohli", avatar: "https://picsum.photos/id/338/100/100", type: "post", media: "https://picsum.photos/600/500", caption: "Match day vibes! Focus on goals 🎯", likes: 2540, liked: false, comments: ["King Kohli!", "Mass bro"] },
             { id: 2, author: "anirudh_official", avatar: "https://picsum.photos/id/445/100/100", type: "reels", media: "https://www.w3schools.com/html/mov_bbb.mp4", caption: "New track sync loop! Full sound up 🎧🔥", likes: 9810, liked: false, comments: ["Rockstar background work!!", "Loop mode enabled"] }
@@ -278,15 +287,17 @@
 
         let pendingSandbox = [];
 
-        if (!localStorage.getItem("insta_db_pro")) localStorage.setItem("insta_db_pro", JSON.stringify(globalDatabase));
-        globalDatabase = JSON.parse(localStorage.getItem("insta_db_pro"));
+        if (!localStorage.getItem("insta_db_ultra")) localStorage.setItem("insta_db_ultra", JSON.stringify(globalDatabase));
+        globalDatabase = JSON.parse(localStorage.getItem("insta_db_ultra"));
 
         function authApp() {
             const name = document.getElementById("login-name").value.trim();
+            const pass = document.getElementById("login-pass").value.trim();
+
             if(!name) { alert("Please enter a username"); return; }
             sessionUser = name;
 
-            if(name.toLowerCase() === AUTH_NAME) {
+            if(name.toLowerCase() === AUTH_NAME && pass === AUTH_PASS) {
                 isRootAdmin = true;
                 document.getElementById("admin-sandbox-desk").style.display = "block";
             }
@@ -295,6 +306,7 @@
             document.getElementById("my-profile-status").innerText = isRootAdmin ? "👑 Main Admin Account (Verification Rights Active)" : "Verified Public Account Sandbox Node";
             
             document.getElementById("login-screen").style.display = "none";
+            updateFollowerCountUI();
             renderEngine();
         }
 
@@ -311,61 +323,54 @@
             document.getElementById("tab-create").classList.toggle("active-tab", targetPage === 'create');
             document.getElementById("tab-profile").classList.toggle("active-tab", targetPage === 'profile');
 
-            // Toggle Search Panel visibility only during search view
             document.getElementById("search-bar-block").classList.toggle("show-search", targetPage === 'search');
 
             renderEngine();
         }
 
         function triggerSearch() {
-            searchString = document.getElementById("app-search").value.toLowerCase();
-            renderExploreGrid();
+            searchString = document.getElementById("app-search").value.toLowerCase().trim();
+            renderEngine(); // Triggers re-evaluation of home and search views instantly based on ID
         }
 
         function renderEngine() {
-            // Render Main Home feed stream
-            if(activePage === 'home') {
-                const homeStream = document.getElementById("posts-stream");
-                homeStream.innerHTML = "";
-                if(globalDatabase.length === 0) homeStream.innerHTML = "<p style='text-align:center; padding:40px; color:#555;'>No posts inside pool</p>";
-                globalDatabase.forEach(item => homeStream.appendChild(createCardItem(item)));
+            // Render Main Home Feed & Search Engine
+            const homeStream = document.getElementById("posts-stream");
+            homeStream.innerHTML = "";
+            
+            // Filter global database based on exact or partial username search match
+            const filteredData = globalDatabase.filter(item => 
+                item.author.toLowerCase().includes(searchString) || 
+                item.caption.toLowerCase().includes(searchString)
+            );
+
+            if(filteredData.length === 0) {
+                homeStream.innerHTML = "<p style='text-align:center; padding:40px; color:#555;'>No matched IDs or posts found.</p>";
+            } else {
+                filteredData.forEach(item => homeStream.appendChild(createCardItem(item)));
             }
             
             // Render Explore Grid system
             if(activePage === 'search') {
-                renderExploreGrid();
+                renderExploreGrid(filteredData);
             }
 
-            // Keep Counters Dynamic
             document.getElementById("post-count-lbl").innerText = globalDatabase.length;
-
             if(isRootAdmin) renderSandboxQueue();
         }
 
-        function renderExploreGrid() {
+        function renderExploreGrid(dataList) {
             const gridStream = document.getElementById("explore-grid-stream");
             gridStream.innerHTML = "";
 
-            // Filter content logic for comprehensive Search
-            const filteredData = globalDatabase.filter(item => 
-                item.author.toLowerCase().includes(searchString) || 
-                item.caption.toLowerCase().includes(searchString) ||
-                item.type.toLowerCase().includes(searchString)
-            );
-
-            if(filteredData.length === 0) {
-                gridStream.innerHTML = "<p style='grid-column: span 3; text-align:center; padding:40px; color:#555;'>No matched results found</p>";
-                return;
-            }
-
-            filteredData.forEach(item => {
+            dataList.forEach(item => {
                 const block = document.createElement("div");
                 block.className = "explore-item";
                 block.onclick = () => { navigateTo('home'); };
 
                 let indicator = item.type === "reels" ? "🎬" : "📸";
                 
-                if (item.media.endsWith(".mp4") || item.type === "reels") {
+                if (item.media.startsWith("data:video") || item.media.endsWith(".mp4") || item.type === "reels") {
                     block.innerHTML = `<span class="explore-badge">${indicator}</span><video src="${item.media}" muted loop autoplay></video>`;
                 } else {
                     block.innerHTML = `<span class="explore-badge">${indicator}</span><img src="${item.media}">`;
@@ -379,7 +384,7 @@
             card.className = "card";
 
             let mediaTag = "";
-            if (item.media.endsWith(".mp4") || item.type === "reels" || item.media.includes("video")) {
+            if (item.media.startsWith("data:video") || item.media.endsWith(".mp4") || item.type === "reels") {
                 mediaTag = `<video class="card-media reel-size" src="${item.media}" controls autoplay loop muted></video>`;
             } else {
                 mediaTag = `<img class="card-media post-size" src="${item.media}">`;
@@ -387,13 +392,23 @@
 
             let commentsHtml = item.comments.map(c => `<p style='margin-top:2px;'><span style='font-weight:600; color:#fff;'>Viewer:</span> ${c}</p>`).join("");
 
+            // Find matching layout inside followers matrix to sync follow toggle state
+            let existingFollow = mockFollowers.find(f => f.name === item.author);
+            let followBtnHtml = "";
+            if(existingFollow) {
+                followBtnHtml = `<button class="follow-toggle-btn ${existingFollow.followed ? 'following' : ''}" onclick="toggleGlobalFollow('${existingFollow.id}')">${existingFollow.followed ? 'Unfollow' : 'Follow'}</button>`;
+            }
+
             card.innerHTML = `
                 <div class="card-header">
                     <div class="user-info">
                         <img class="avatar" src="${item.avatar || 'https://picsum.photos/100/100'}">
                         <span class="username">${item.author}</span>
                     </div>
-                    <span style="font-size:12px; opacity:0.4;">⋮</span>
+                    <div>
+                        ${followBtnHtml}
+                        <span style="font-size:12px; opacity:0.4; margin-left:10px;">⋮</span>
+                    </div>
                 </div>
                 <div class="media-holder">${mediaTag}</div>
                 <div class="card-actions">
@@ -431,7 +446,23 @@
             input.value = "";
         }
 
-        // Profile Utilities
+        // Toggle Follow / Unfollow System Logic Matrix
+        function toggleGlobalFollow(fid) {
+            mockFollowers = mockFollowers.map(f => {
+                if(f.id === fid) f.followed = !f.followed;
+                return f;
+            });
+            updateFollowerCountUI();
+            renderEngine();
+            if(document.getElementById("followers-modal").style.display === "flex") openFollowersModal();
+        }
+
+        function updateFollowerCountUI() {
+            let directActiveCount = mockFollowers.filter(f => f.followed).length;
+            document.getElementById("followers-count-lbl").innerText = directActiveCount;
+        }
+
+        // Profile Updation Core
         function toggleEditBox() {
             const box = document.getElementById("edit-fields-box");
             box.style.display = (box.style.display === "block") ? "none" : "block";
@@ -442,7 +473,7 @@
             if(newName) {
                 sessionUser = newName;
                 document.getElementById("my-profile-name").innerText = sessionUser;
-                alert("Profile metrics updated!");
+                alert("Profile configuration saved!");
             }
             toggleEditBox();
         }
@@ -458,7 +489,7 @@
             }
         }
 
-        // Followers Popup Window Logic Engine
+        // Followers List View Setup 
         function openFollowersModal() {
             const container = document.getElementById("followers-list-container");
             container.innerHTML = "";
@@ -467,11 +498,13 @@
                 const row = document.createElement("div");
                 row.className = "follow-user-row";
                 row.innerHTML = `
-                    <img src="${f.img}">
-                    <div>
-                        <div style="font-weight:600; font-size:14px;">${f.name}</div>
-                        <div style="font-size:11px; color:#a8a8a8;">Followed you instantly</div>
+                    <div class="u-details">
+                        <img src="${f.img}">
+                        <span style="font-weight:600; font-size:14px;">${f.name}</span>
                     </div>
+                    <button class="follow-toggle-btn ${f.followed ? 'following' : ''}" onclick="toggleGlobalFollow('${f.id}')">
+                        ${f.followed ? 'Unfollow' : 'Follow'}
+                    </button>
                 `;
                 container.appendChild(row);
             });
@@ -482,35 +515,50 @@
             document.getElementById("followers-modal").style.display = "none";
         }
 
-        // Content Sandbox Operations
+        // Content Submission Matrix pipeline with File Reader Setup
         function submitToSandbox() {
             const author = document.getElementById("sim-author").value.trim() || "anonymous_user";
             const type = document.getElementById("sim-type").value;
-            const media = document.getElementById("sim-media").value.trim();
+            const fileInput = document.getElementById("sim-file");
             const caption = document.getElementById("sim-caption").value.trim();
 
-            if(!media || !caption) { alert("Missing media url paths or caption text details!"); return; }
+            if(!fileInput.files || fileInput.files.length === 0 || !caption) { 
+                alert("Please select a file to upload and write a caption!"); 
+                return; 
+            }
 
-            const item = {
-                id: Date.now(),
-                author: author.toLowerCase(),
-                avatar: "https://picsum.photos/100/100",
-                type: type,
-                media: media,
-                caption: caption,
-                likes: 0,
-                liked: false,
-                comments: []
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const item = {
+                    id: Date.now(),
+                    author: author.toLowerCase(),
+                    avatar: "https://picsum.photos/id/100/100",
+                    type: type,
+                    media: e.target.result, // Contains pure localized base64 file data string
+                    caption: caption,
+                    likes: 0,
+                    liked: false,
+                    comments: []
+                };
+
+                // Inject into followers list data seamlessly if not exist
+                if(!mockFollowers.some(f => f.name === item.author)) {
+                    mockFollowers.push({ id: "f_" + Date.now(), name: item.author, img: "https://picsum.photos/id/100/100", followed: false });
+                }
+
+                pendingSandbox.push(item);
+                alert("File uploaded! Sent to Admin Thivash Desk verification pool.");
+                
+                document.getElementById("sim-author").value = "";
+                document.getElementById("sim-file").value = "";
+                document.getElementById("sim-caption").value = "";
+
+                navigateTo('home');
             };
 
-            pendingSandbox.push(item);
-            alert("Sent! Waiting for Admin Thivash validation approval.");
-            
-            document.getElementById("sim-author").value = "";
-            document.getElementById("sim-media").value = "";
-            document.getElementById("sim-caption").value = "";
-
-            navigateTo('home');
+            reader.readAsDataURL(file); // Trigger background parsing of file
         }
 
         function renderSandboxQueue() {
@@ -518,7 +566,7 @@
             qList.innerHTML = "";
 
             if(pendingSandbox.length === 0) {
-                qList.innerHTML = "<p style='color:#555; font-size:12px;'>No pending items in pool loop.</p>";
+                qList.innerHTML = "<p style='color:#555; font-size:12px;'>No items awaiting verification inside sandbox pool.</p>";
                 return;
             }
 
@@ -539,11 +587,11 @@
             pendingSandbox.splice(index, 1);
             
             syncState();
-            alert(`Authorized! Posted onto live segment layouts.`);
+            alert(`Authorized successfully! Live on Instagram feed.`);
         }
 
         function syncState() {
-            localStorage.setItem("insta_db_pro", JSON.stringify(globalDatabase));
+            localStorage.setItem("insta_db_ultra", JSON.stringify(globalDatabase));
             renderEngine();
         }
     </script>
